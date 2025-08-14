@@ -1,0 +1,70 @@
+<!--
+  This is the updated HTML template that uses the new CSS classes
+  defined in footer.component.css.
+-->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-content">
+            <!-- Company Info / Logo Section -->
+            <div class="footer-brand">
+                <app-logo [theme]="'light'"></app-logo>
+                <p class="brand-text">
+                    Crafting beautiful and functional web experiences for a digital-first world.
+                </p>
+            </div>
+
+            <!-- Navigation Links Section -->
+            <div class="footer-links-wrapper">
+                <div class="footer-links">
+                    <h4 class="links-title">Company</h4>
+                    <ul>
+                        <li><a href="#" class="link">About Us</a></li>
+                        <li><a href="#" class="link">Careers</a></li>
+                        <li><a href="#" class="link">Press</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4 class="links-title">Support</h4>
+                    <ul>
+                        <li><a href="#" class="link">Help Center</a></li>
+                        <li><a href="#" class="link">Terms of Service</a></li>
+                        <li><a href="#" class="link">Privacy Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4 class="links-title">Connect</h4>
+                    <ul>
+                        <li><a href="#" class="link">Blog</a></li>
+                        <li><a href="#" class="link">Contact Us</a></li>
+                        <li><a href="#" class="link">Partnerships</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom-section">
+            <!-- Social Media Icons -->
+            <div class="social-icons">
+                <a href="#" class="social-icon">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.876v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
+                    </svg>
+                </a>
+                <a href="#" class="social-icon">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2C6.477 2 2 6.484 2 12.017c0 5.422 3.303 9.948 7.904 11.66A12.022 12.022 0 0012 24c5.522 0 10-4.478 10-10.017 0-5.533-4.478-10-10-10zm4.5 8h-3v8h-3v-8H7.5V7h9v3z" />
+                    </svg>
+                </a>
+                <a href="#" class="social-icon">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2.163c3.204 0 3.584.013 4.858.07c1.17.067 1.83.25 2.222.404.417.165.728.386 1.05.707s.542.634.707 1.05c.154.392.337 1.052.404 2.222.057 1.274.07 1.654.07 4.858s-.013 3.584-.07 4.858c-.067 1.17-.25 1.83-.404 2.222-.165.417-.386.728-.707 1.05s-.634.542-1.05.707c-.392.154-1.052.337-2.222.404-1.274.057-1.654.07-4.858.07s-3.584-.013-4.858-.07c-1.17-.067-1.83-.25-2.222-.404-.417-.165-.728-.386-1.05-.707s-.542-.634-.707-1.05c-.154-.392-.337-1.052-.404-2.222-.057-1.274-.07-1.654-.07-4.858s.013-3.584.07-4.858c.067-1.17.25-1.83.404-2.222.165-.417.386-.728.707-1.05s.634-.542 1.05-.707c.392-.154 1.052-.337 2.222-.404 1.274-.057 1.654-.07 4.858-.07zM12 0C8.75 0 8.334.013 7.06.07c-1.554.088-2.61.353-3.414.673-.93.366-1.636.814-2.334 1.512s-1.146 1.404-1.512 2.334c-.32.804-.585 1.86-.673 3.414-.057 1.274-.07 1.654-.07 4.858s.013 3.584.07 4.858c.088 1.554.353 2.61.673 3.414.366.93.814 1.636 1.512 2.334s1.404 1.146 2.334 1.512c.804.32 1.86.585 3.414.673 1.274.057 1.654.07 4.858.07s3.584-.013 4.858-.07c1.554-.088 2.61-.353 3.414-.673.93-.366 1.636-.814 2.334-1.512s1.146-1.404 1.512-2.334c.32-.804.585-1.86.673-3.414.057-1.274.07-1.654.07-4.858s-.013-3.584-.07-4.858c-.088-1.554-.353-2.61-.673-3.414-.366-.93-.814-1.636-1.512-2.334s-1.404-1.146-2.334-1.512c-.804-.32-1.86-.585-3.414-.673C15.666 0 15.286.013 12 0zM12 6.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM12 8a4 4 0 110 8 4 4 0 010-8zm5.5-2.25a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5z" />
+                    </svg>
+                </a>
+            </div>
+            <!-- Copyright Notice -->
+            <p class="copyright-text">&copy; 2024 Your Brand. All rights reserved.</p>
+        </div>
+    </div>
+</footer>

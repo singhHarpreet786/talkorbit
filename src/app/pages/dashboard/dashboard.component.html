@@ -1,0 +1,117 @@
+<!-- nav bar -->
+<nav id="navbar" class="navbar" [class.shadow-on-scroll]="scrolled">
+    <div class="nav-body">
+        <div class="left-nav">
+            <button nz-button nzType="default" style="border: none;" (click)="open()"><span nz-icon
+                    nzType="menu"></span></button>
+            <app-logo style="scale: 0.9;"></app-logo>
+            <!-- <ul nz-menu nzMode="horizontal" class="location-dropdown">
+                <li nz-submenu nzTitle="Location" nzIcon="setting">
+                  <ul>
+                    <li nz-menu-item>Option 1
+                    </li>
+                    <li nz-menu-item>Option 2
+                    </li>
+                    <li nz-menu-item>Option 3
+                    </li>
+                    
+                  </ul>
+                </li>
+            </ul> -->
+        </div>
+        <!-- <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton" style="width: 500px;margin-right: 20px;" >
+            <input type="text" nz-input class="inputElement" placeholder="Search Artspot.in" />
+          </nz-input-group>
+          <ng-template #suffixIconButton>
+            <button nz-button nzType="primary" nzSearch class="searchbutton"><span nz-icon nzType="search"></span></button>
+          </ng-template> -->
+        <div class="right-nav">
+            <!-- <nz-badge [nzCount]="5">
+                <button nz-button nzType="default" nzShape="circle" (click)="open()"><span nz-icon nzType="shopping-cart"
+                        nzTheme="outline"></span>
+                </button>
+            </nz-badge> -->
+    
+            <nz-avatar nzIcon="user"></nz-avatar>
+        </div>
+    </div>
+   <!-- <div class="top-menubar">
+    <ul nz-menu nzMode="horizontal" class="menubar-body" style="width: 100%;">
+        <li nz-submenu nzTitle="Navigation Three - Submenu" nzIcon="setting">
+          <ul>
+            <li nz-menu-item>Option 1
+            </li>
+            <li nz-menu-item>Option 2
+            </li>
+            <li nz-menu-item>Option 3
+            </li>
+            
+          </ul>
+        </li>
+        <li nz-submenu nzTitle="Navigation Three - Submenu" nzIcon="setting">
+            <ul>
+              <li nz-menu-item>Option 1
+              </li>
+              <li nz-menu-item>Option 2
+              </li>
+              <li nz-menu-item>Option 3
+              </li>
+              
+            </ul>
+          </li>
+          <li nz-submenu nzTitle="Navigation Three - Submenu" nzIcon="setting">
+            <ul>
+              <li nz-menu-item>Option 1
+              </li>
+              <li nz-menu-item>Option 2
+              </li>
+              <li nz-menu-item>Option 3
+              </li>
+              
+            </ul>
+          </li>
+          <li nz-submenu nzTitle="Navigation Three - Submenu" nzIcon="setting">
+            <ul>
+              <li nz-menu-item>Option 1
+              </li>
+              <li nz-menu-item>Option 2
+              </li>
+              <li nz-menu-item>Option 3
+              </li>
+              
+            </ul>
+          </li>
+          <li nz-submenu nzTitle="Navigation Three - Submenu" nzIcon="setting">
+            <ul>
+              <li nz-menu-item>Option 1
+              </li>
+              <li nz-menu-item>Option 2
+              </li>
+              <li nz-menu-item>Option 3
+              </li>
+              
+            </ul>
+          </li>
+      </ul>
+   </div> -->
+</nav>
+
+<nz-drawer [nzClosable]="false" [nzVisible]="visible" nzPlacement="left" nzTitle="Hello, User" (nzOnClose)="close()">
+    <ng-container *nzDrawerContent>
+        <ul nz-menu [nzMode]="'vertical'">
+            <li nz-submenu nzTitle="Best sellers" (click)="close()" [routerLink]="[ '/home']">
+            </li>
+            <li nz-submenu (nzOpenChange)="change($event)" nzTitle="New Release" (click)="close()">
+            </li>
+            <li nz-submenu nzTitle="Movers & Shakers" (click)="close()">
+            </li>
+          </ul>
+    </ng-container>
+</nz-drawer>
+
+<!-- body -->
+<div class="router-body" (scroll)="onScroll($event)" >
+    <router-outlet></router-outlet>
+</div>
+
+<!-- footer -->

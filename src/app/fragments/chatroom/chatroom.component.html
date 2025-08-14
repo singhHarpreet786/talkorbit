@@ -1,0 +1,73 @@
+<div class="flex items-center justify-center min-h-screen bg-gray-200 p-4 font-sans">
+    <div class="w-full max-w-xl mx-auto">
+      <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">Random Chat</h1>
+
+      <div *ngIf="loading" class="text-center p-8 text-gray-600">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+        <p>Connecting...</p>
+      </div>
+
+      <div *ngIf="!loading && queueStatus === 'inQueue'" class="text-center p-8 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Waiting for a partner...</h2>
+        <p class="text-gray-500 mb-6">Your user ID is: {{ userId }}</p>
+        <div class="animate-pulse flex space-x-2 justify-center">
+          <div class="h-4 w-4 bg-blue-400 rounded-full"></div>
+          <div class="h-4 w-4 bg-blue-400 rounded-full"></div>
+          <div class="h-4 w-4 bg-blue-400 rounded-full"></div>
+        </div>
+      </div>
+      <div class=" w-full aspect-video bg-gray-800 rounded-t-lg">
+        <video #remoteVideo autoplay playsinline class="w-full h-full object-cover rounded-t-lg"></video>
+        <video #localVideo autoplay playsinline muted class="absolute bottom-2 right-2 w-1/4 h-1/4 object-cover rounded-md border-2 border-white shadow-lg"></video>
+      </div>
+      <div *ngIf="!loading && queueStatus === 'inChat'" class="flex flex-col h-full bg-gray-100 rounded-lg shadow-lg overflow-hidden">
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+          <div *ngFor="let msg of chatMessages" class="flex" [ngClass]="{'justify-end': msg.senderId === userId, 'justify-start': msg.senderId !== userId}">
+            <div
+              class="p-3 rounded-xl max-w-sm shadow-md"
+              [ngClass]="{
+                'bg-blue-500 text-white rounded-br-none': msg.senderId === userId,
+                'bg-white text-gray-800 rounded-bl-none': msg.senderId !== userId
+              }"
+            >
+              <p>{{ msg.text }}</p>
+            </div>
+          </div>
+        </div>
+        <form (ngSubmit)="handleSendMessage($event)" class="p-4 bg-white border-t border-gray-200 flex items-center">
+          <input
+            type="text"
+            [(ngModel)]="messageInput"
+            name="messageInput"
+            placeholder="Type your message..."
+            class="flex-1 p-3 rounded-l-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            class="p-3 bg-blue-600 text-white rounded-r-full hover:bg-blue-700 transition duration-300"
+          >
+            Send
+          </button>
+        </form>
+        <div class="p-4 bg-white border-t border-gray-200">
+          <button
+            (click)="handleLeaveChat()"
+            class="w-full p-3 rounded-full bg-red-500 text-white hover:bg-red-600 transition duration-300"
+          >
+            Leave Chat
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && !queueStatus" class="text-center p-8 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Ready to chat?</h2>
+        <p class="text-gray-500 mb-6">Click the button below to be matched with a random person.</p>
+        <button
+          (click)="handleJoinQueue()"
+          class="w-full p-4 rounded-full bg-green-500 text-white font-bold text-lg hover:bg-green-600 transition duration-300 shadow-lg"
+        >
+          Start Chat
+        </button>
+      </div>
+    </div>
+  </div>

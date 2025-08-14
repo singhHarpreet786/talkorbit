@@ -1,0 +1,162 @@
+
+/* Main footer styling */
+.footer {
+    background-color: #1f2937; /* Corresponds to bg-gray-900 */
+    color: #d1d5db;             /* Corresponds to text-gray-300 */
+    padding: 3rem 3rem;            /* Corresponds to py-12 */
+
+}
+
+@media (min-width: 768px) {
+    .footer {
+        padding: 4rem 0;        /* Corresponds to md:py-16 */
+    }
+}
+
+/* Container for the footer content */
+.footer-container {
+    /* max-width: 1280px; */
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
+         /* Corresponds to px-4 */
+}
+
+@media (min-width: 768px) {
+    .footer-container {
+        padding-left: 70px;     /* Corresponds to md:px-8 */
+        padding-right: 70px;    /* Corresponds to md:px-8 */
+    }
+}
+
+/* Flexbox for main content sections */
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;                  /* Corresponds to gap-8 */
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .footer-content {
+        flex-direction: row;    /* Corresponds to md:flex-row */
+        justify-content: space-between; /* Corresponds to md:justify-between */
+        align-items: flex-start; /* Corresponds to md:items-start */
+        gap: 4rem;              /* Corresponds to md:gap-16 */
+        text-align: left;
+    }
+}
+
+/* Branding section */
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .footer-brand {
+        align-items: flex-start;
+        text-align: left;
+    }
+}
+
+.brand-logo {
+    font-size: 1.5rem;          /* Corresponds to text-2xl */
+    font-weight: 700;           /* Corresponds to font-bold */
+    color: #fff;                /* Corresponds to text-white */
+}
+
+.brand-text {
+    margin-top: 1rem;           /* Corresponds to mt-4 */
+    max-width: 24rem;           /* Corresponds to max-w-sm */
+    color: #9ca3af;             /* Corresponds to text-gray-400 */
+}
+
+/* Navigation links section */
+.footer-links-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: 3rem;           /* Corresponds to gap-x-12 */
+    row-gap: 1.5rem;            /* Corresponds to gap-y-6 */
+}
+
+@media (min-width: 768px) {
+    .footer-links-wrapper {
+        justify-content: flex-end; /* Corresponds to md:justify-end */
+    }
+}
+
+.footer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .footer-links {
+        align-items: flex-start;
+        text-align: left;
+    }
+}
+
+.links-title {
+    font-size: 1.125rem;        /* Corresponds to text-lg */
+    font-weight: 600;           /* Corresponds to font-semibold */
+    color: #fff;                /* Corresponds to text-white */
+    margin-bottom: 0.75rem;     /* Corresponds to mb-3 */
+}
+
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.5rem;
+}
+
+.link {
+    color: #d1d5db;             /* Corresponds to text-gray-300 */
+    transition-property: color; /* Corresponds to transition-colors */
+    transition-duration: 300ms; /* Corresponds to duration-300 */
+}
+
+.link:hover {
+    color: #fff;                /* Corresponds to hover:text-white */
+}
+
+/* Bottom section with social icons and copyright */
+.footer-bottom-section {
+    border-top: 1px solid #374151; /* Corresponds to border-t border-gray-700 */
+    margin-top: 3rem;           /* Corresponds to mt-12 */
+    padding-top: 2rem;          /* Corresponds to pt-8 */
+    text-align: center;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;      /* Corresponds to mb-6 */
+    gap: 1.5rem;                /* Corresponds to space-x-6 */
+}
+
+.social-icon {
+    color: #9ca3af;             /* Corresponds to text-gray-400 */
+    transition-property: color;
+    transition-duration: 300ms;
+}
+
+.social-icon:hover {
+    color: #fff;
+}
+
+.copyright-text {
+    font-size: 0.875rem;        /* Corresponds to text-sm */
+    color: #6b7280;             /* Corresponds to text-gray-500 */
+}

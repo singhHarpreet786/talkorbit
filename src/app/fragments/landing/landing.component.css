@@ -1,0 +1,73 @@
+.hor-section {
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 50px);
+    padding-left: 70px;
+    padding-right: 70px;
+    gap: 25px;
+    align-items: center;
+}
+
+
+
+
+
+.container {
+    height: 100%;
+    flex: 1;
+    gap: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    flex-direction: column;
+}
+
+.planet-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    flex-direction: column;
+}
+
+
+.gradient-text {
+    font-size: 60px;
+    font-weight: bold;
+    line-height: 75px;
+    background: linear-gradient(90deg, var(--orange), #4f0404);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+}
+
+@media (max-width: 1000px) {
+    .hor-section {
+        width: 100%;
+        margin-bottom: 50px;
+        gap: 0px;
+        flex-direction: column-reverse;
+    }
+
+    .planet-container {
+        height: 460px;
+        width: 100%;
+        scale: 0.5;
+    }
+
+    .gradient-text {
+        font-size: 30px;
+        line-height: 40px;
+    }
+
+    .container {
+        margin-top: -30px;
+        align-items: start;
+        justify-content: start;
+        padding-top: 0px;
+    }
+}

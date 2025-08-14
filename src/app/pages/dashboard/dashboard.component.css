@@ -1,0 +1,81 @@
+.navbar {
+    background-color: white;
+    position: fixed;
+    width: 100%;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    top: 0;
+    flex-direction: column;
+    transition: box-shadow 0.3s ease-in-out;
+  }
+  
+  .navbar.shadow-on-scroll {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .navbar.shadow {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .nav-body {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-bottom: 1px solid rgb(240, 239, 239);
+  }
+  
+  .location-dropdown {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+  }
+  
+  .left-nav {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .right-nav {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-right: 10px;
+  }
+  
+  .top-menubar {
+    display: flex;
+    flex-direction: row;
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
+  .menubar-body{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-top: -10px;
+  }
+  
+  .router-body {
+    height: 100%;
+    margin-top:50px;
+    overflow-y: scroll;
+    width: 100%;
+  }
+  
+  
+  .wrapper {
+    width: 240px;
+    height: 100vh;
+  }
+  
+  [nz-menu] {
+    width: 355px;
+  }

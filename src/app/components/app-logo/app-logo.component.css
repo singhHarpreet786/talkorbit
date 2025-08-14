@@ -1,0 +1,25 @@
+.app-logo {
+    height: 45px;
+    width: 45px;
+}
+
+.app-title-dark {
+    font-size: 20px;
+    font-weight: 500;
+    color: #444444;
+}
+
+.app-title-light {
+    font-size: 20px;
+    font-weight: 500;
+    color: #d1d5db;
+}
+
+.app-logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: fit-content;
+    gap: 2px;
+    flex-direction: row;
+}
