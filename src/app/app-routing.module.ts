@@ -28,7 +28,7 @@ const routes: Routes = [
       },
       {
         path:'',
-        redirectTo:'landing',
+        redirectTo:'chatroom',
         pathMatch:'full'
       },
       

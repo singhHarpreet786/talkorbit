@@ -1,4 +1,4 @@
-<div class="flex items-center justify-center min-h-screen bg-gray-200 p-4 font-sans">
+<!-- <div class="flex items-center justify-center min-h-screen bg-gray-200 p-4 font-sans">
     <div class="w-full max-w-xl mx-auto">
       <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">Random Chat</h1>
 
@@ -70,4 +70,37 @@
         </button>
       </div>
     </div>
+  </div> -->
+
+<div style="display: flex;flex-direction: row;">
+  <div style="display: flex;flex-direction: column;flex: 1;padding: 20px;height: var(100vh - 40%);gap: 10px;">
+    <div style="flex: 1;">
+      <video #remoteVideo autoplay playsinline style="border: 3px solid var(--orange);width: 445px;height: 335px;border-radius: 10px;"></video>
+    </div>
+    <div style="flex: 1;">
+      <video #localVideo autoplay playsinline muted style="border: 3px solid var(--orange);width: 445px;height: 335px;border-radius: 10px;"></video>
+    </div>
   </div>
+
+  <div style="display: flex;flex: 1;">
+    <div class="bg-white border-t border-gray-200">
+      <button (click)="handleLeaveChat()"
+        class="w-full p-3 rounded-full bg-red-500 text-white hover:bg-red-600 transition duration-300">
+        Leave Chat
+      </button>
+    </div>
+    <div *ngIf="!loading && !queueStatus" class="text-center p-8 bg-white rounded-lg shadow-lg">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Ready to chat?</h2>
+      <p class="text-gray-500 mb-6">Click the button below to be matched with a random person.</p>
+      <button (click)="handleJoinQueue()"
+        class="w-full p-4 rounded-full bg-green-500 text-white font-bold text-lg hover:bg-green-600 transition duration-300 shadow-lg">
+        Start Chat
+      </button>
+    </div>
+
+
+
+
+  </div>
+
+</div>

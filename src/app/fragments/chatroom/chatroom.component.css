@@ -1,0 +1,26 @@
+.global-grid{
+  display: flex;
+  flex-direction: row;
+  height: calc(100% - 70px);
+}
+.video-grid{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px;
+}
+
+.grid-style{
+  height: 100%;
+  width: 100%;
+  margin: 10px;
+  border: 2px solid var(--orange);
+  border-radius: 20px;
+}
+
+.chat-grid{
+  flex: 2;
+}

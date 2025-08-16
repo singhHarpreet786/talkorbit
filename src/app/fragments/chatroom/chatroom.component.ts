@@ -1,16 +1,16 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, query, where, arrayUnion } from 'firebase/firestore';
+import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, arrayUnion } from 'firebase/firestore';
 
 @Component({
   selector: 'app-chatroom',
   templateUrl: './chatroom.component.html',
   styleUrls: ['./chatroom.component.css']
 })
-export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ChatroomComponent implements OnInit, OnDestroy {
   @ViewChild('localVideo', { static: false }) localVideo!: ElementRef<HTMLVideoElement>;
-@ViewChild('remoteVideo', { static: false }) remoteVideo!: ElementRef<HTMLVideoElement>;
+  @ViewChild('remoteVideo', { static: false }) remoteVideo!: ElementRef<HTMLVideoElement>;
 
   userId: string | null = null;
   sessionId: string | null = null;
@@ -64,6 +64,7 @@ export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
       onAuthStateChanged(this.auth, async (user) => {
         if (user) {
           this.userId = user.uid;
+          await this.setupLocalCamera(); // ✅ Always start camera after login
           this.setupListeners();
         } else {
           const initialAuthToken = null;
@@ -80,17 +81,22 @@ export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  async ngAfterViewInit(): Promise<void> {
-   this.setupLocalCamera();
-  }
+  // async ngAfterViewInit(): Promise<void> {
+  //   // Reconnect camera if already streaming
+  //   if (this.localStream) {
+  //     this.localVideo.nativeElement.srcObject = this.localStream;
+  //     this.localVideo.nativeElement.muted = true;
+  //     await this.localVideo.nativeElement.play().catch(err => console.error('Local video play error:', err));
+  //   }
+  // }
 
-  async setupLocalCamera(){
+  async setupLocalCamera() {
     try {
-      this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    
+      if (!this.localStream) {
+        this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      }
 
       if (this.localVideo?.nativeElement) {
-        console.log("coming herer==========>")
         this.localVideo.nativeElement.srcObject = this.localStream;
         this.localVideo.nativeElement.muted = true;
         await this.localVideo.nativeElement.play().catch(err => console.error('Local video play error:', err));
@@ -214,17 +220,11 @@ export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.peerConnection.ontrack = (event) => {
-      console.log('Remote track received:', event.streams);
-    
       if (this.remoteVideo?.nativeElement) {
         const videoEl = this.remoteVideo.nativeElement;
-    
-        // Set srcObject only if it's different
         if (videoEl.srcObject !== event.streams[0]) {
-          console.log('Setting remote video stream...');
           videoEl.srcObject = event.streams[0];
           videoEl.muted = false;
-    
           videoEl.onloadedmetadata = async () => {
             try {
               await videoEl.play();
@@ -233,11 +233,8 @@ export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
             }
           };
         }
-      } else {
-        console.warn("⚠️ remoteVideo ViewChild not available");
       }
-    
-};
+    };
 
     const callId = [this.userId, this.partnerId].sort().join('-');
     const callDocRef = doc(this.callsCollection, callId);
@@ -247,19 +244,17 @@ export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
       const data = docSnap.data() as any;
 
       if (data.offer && !data.answer && this.peerConnection.signalingState === 'stable') {
-        console.log('Setting remote description with offer.');
         await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
         await this.createAnswer(callId);
       } else if (data.answer && this.peerConnection.signalingState !== 'stable') {
-        console.log('Setting remote description with answer.');
         await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
       }
+      
 
       if (data.candidates) {
         for (const candidate of data.candidates) {
           if (candidate.senderId !== this.userId) {
             try {
-              console.log("Adding ICE candidate:", candidate);
               await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
             } catch (err) {
               console.error('Error adding ICE candidate:', err);
@@ -271,7 +266,6 @@ export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.peerConnection.onicecandidate = async (event) => {
       if (event.candidate) {
-        console.log('Sending ICE candidate.');
         await updateDoc(callDocRef, {
           candidates: arrayUnion({ ...event.candidate.toJSON(), senderId: this.userId })
         });
@@ -329,9 +323,7 @@ export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
       this.callSub();
       this.callSub = null;
     }
-    if (this.localStream) {
-      this.localStream.getTracks().forEach(track => track.stop());
-    }
+    // ❌ Don't stop camera tracks so it stays on
   }
 
   ngOnDestroy(): void {
@@ -342,9 +334,7 @@ export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
     this.closePeerConnection();
   }
 
-  // handle joinning queue
   async handleJoinQueue(): Promise<void> {
-    this.setupLocalCamera()
     if (!this.db || !this.userId || !this.sessionId) return;
     this.loading = true;
     await setDoc(doc(this.usersCollection, this.userId), {
@@ -359,7 +349,6 @@ export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loading = false;
   }
 
-  // handle leaving chat
   async handleLeaveChat(): Promise<void> {
     if (!this.db || !this.userId || !this.partnerId) return;
 
@@ -381,7 +370,6 @@ export class ChatroomComponent implements OnInit, AfterViewInit, OnDestroy {
     this.closePeerConnection();
   }
 
-  // responsible to send the message
   async handleSendMessage(e: Event): Promise<void> {
     e.preventDefault();
     if (!this.db || !this.userId || !this.partnerId || !this.messageInput.trim()) return;
