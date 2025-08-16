@@ -4,83 +4,7 @@ import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc
 
 @Component({
   selector: 'app-testcomponent',
-  template: `
-    <div class="container">
-      <div class="header">
-        <h1>🎥 Video Chat</h1>
-      </div>
-      
-      <div class="status" [class.pulse]="connectionStatus.includes('Ready') || connectionStatus.includes('Connected')">
-        <div class="status-text">
-          Status: {{ connectionStatus }}
-          <span *ngIf="busy" class="loading"></span>
-        </div>
-        <div *ngIf="debugInfo" class="debug">{{ debugInfo }}</div>
-      </div>
-      
-      <div class="video-container">
-        <div class="video-wrapper">
-          <div class="video-label">📱 Your Video</div>
-          <video #localVideo class="local-video" autoplay muted playsinline></video>
-        </div>
-        <div class="video-wrapper">
-          <div class="video-label">🌐 Remote Video</div>
-          <video #remoteVideo autoplay playsinline></video>
-          <div *ngIf="!remoteVideoActive" class="no-video">
-            <div class="no-video-icon">📹</div>
-            <div>Waiting for remote video...</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="controls">
-        <button class="btn btn-primary" (click)="createRoom()" [disabled]="busy">
-          <span class="btn-icon">🚀</span>
-          <span class="btn-text">Create Room</span>
-        </button>
-        <button class="btn btn-secondary" (click)="joinRandomRoom()" [disabled]="busy">
-          <span class="btn-icon">🎲</span>
-          <span class="btn-text">Join Random</span>
-        </button>
-        <button class="btn btn-danger" (click)="hangup()" [disabled]="!connected && !busy">
-          <span class="btn-icon">📞</span>
-          <span class="btn-text">Hang Up</span>
-        </button>
-      </div>
-      
-      <div class="room-info" *ngIf="roomId">
-        <div class="room-label">Room ID</div>
-        <div class="room-id">{{ roomId }}</div>
-      </div>
-      
-      <div class="chat" *ngIf="connected">
-        <div class="chat-header">
-          <span class="chat-icon">💬</span>
-          <span>Chat Messages</span>
-        </div>
-        <div class="messages" #messagesContainer>
-          <div *ngFor="let message of messages" class="message" 
-               [class.message-own]="message.sender === 'You'"
-               [class.message-remote]="message.sender !== 'You'">
-            <div class="message-sender">{{ message.sender }}</div>
-            <div class="message-text">{{ message.text }}</div>
-          </div>
-        </div>
-        <div class="message-input">
-          <input 
-            [(ngModel)]="messageText" 
-            (keyup.enter)="sendMessage()" 
-            placeholder="Type your message here..." 
-            class="message-field"
-          />
-          <button class="btn btn-primary btn-send" (click)="sendMessage()">
-            <span class="btn-icon">💬</span>
-            <span class="btn-text-mobile">Send</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: `./test.component.html`,
   styles: [`
     * {
       margin: 0;
@@ -664,6 +588,7 @@ export class TestComponent implements OnInit, OnDestroy {
 
       if (this.localVideo) {
         this.localVideo.nativeElement.srcObject = this.localStream;
+        this.localVideo.nativeElement.muted=true
       }
 
       this.connectionStatus = 'Ready to connect';
