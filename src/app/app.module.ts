@@ -43,6 +43,7 @@ import { registerLocaleData } from '@angular/common';
 import en from '@angular/common/locales/en';
 import { PlanetComponent} from './components/planet/planet.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { TestComponent } from './fragments/test/test.component';
 
 registerLocaleData(en);
 
@@ -60,7 +61,8 @@ const ngZorroConfig: NzConfig = {
     LandingComponent,
     AppLogoComponent,
     PlanetComponent,
-    FooterComponent
+    FooterComponent,
+    TestComponent
   ],
   imports: [
     BrowserModule,

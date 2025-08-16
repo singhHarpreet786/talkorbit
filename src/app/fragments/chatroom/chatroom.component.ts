@@ -81,15 +81,6 @@ export class ChatroomComponent implements OnInit, OnDestroy {
     }
   }
 
-  // async ngAfterViewInit(): Promise<void> {
-  //   // Reconnect camera if already streaming
-  //   if (this.localStream) {
-  //     this.localVideo.nativeElement.srcObject = this.localStream;
-  //     this.localVideo.nativeElement.muted = true;
-  //     await this.localVideo.nativeElement.play().catch(err => console.error('Local video play error:', err));
-  //   }
-  // }
-
   async setupLocalCamera() {
     try {
       if (!this.localStream) {
@@ -142,7 +133,6 @@ export class ChatroomComponent implements OnInit, OnDestroy {
 
     this.queueSub = onSnapshot(query(this.queueCollection, where("userId", "!=", this.userId)), async (queueSnapshot) => {
       if (queueSnapshot.empty || this.queueStatus !== 'inQueue') return;
-
       const potentialPartnerDocs = queueSnapshot.docs.filter(doc => (doc.data() as any)['userId'] !== this.userId);
       if (potentialPartnerDocs.length === 0) return;
 
@@ -171,6 +161,7 @@ export class ChatroomComponent implements OnInit, OnDestroy {
 
       await deleteDoc(doc(this.queueCollection, this.sessionId!));
       await deleteDoc(doc(this.queueCollection, potentialPartnerSessionId));
+
 
       await this.createOffer();
     });

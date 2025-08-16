@@ -5,6 +5,7 @@ import { SignupComponent } from './pages/signup/signup.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { ChatroomComponent } from './fragments/chatroom/chatroom.component';
 import { LandingComponent } from './fragments/landing/landing.component';
+import { TestComponent } from './fragments/test/test.component';
 
 const routes: Routes = [
   {
@@ -20,7 +21,7 @@ const routes: Routes = [
     children:[
       {
         path:'chatroom',
-        component:ChatroomComponent
+        component:TestComponent
       },
       {
         path:'landing',
