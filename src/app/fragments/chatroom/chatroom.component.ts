@@ -30,6 +30,18 @@ export class ChatroomComponent implements OnInit, OnDestroy {
   private dataChannel: RTCDataChannel | null = null;
   private unsubscribes: (() => void)[] = [];
   public chatToggle=false;
+  visible = false;
+  open(): void {
+    this.visible = true;
+  }
+
+  close(): void {
+    this.visible = false;
+  }
+
+  change(value: boolean): void {
+    console.log(value);
+  }
 
   connectionStatus = 'Initializing...';
   debugInfo = '';
