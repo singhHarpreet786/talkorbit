@@ -68,42 +68,11 @@
     <button nz-button nzType="primary" class="send-button" (click)="joinRandomRoom()"  [nzSize]="'large'" nzShape="round" [disabled]="busy">
       <span nz-icon nzType="swap"></span>
     </button>
-    <button nz-button nzType="primary" class="send-button" (click)="open()" [nzSize]="'large'" nzShape="round"  [disabled]="!this.connected">
+    <button nz-button nzType="primary" class="send-button" (click)="toogleChat()" [nzSize]="'large'" nzShape="round"  [disabled]="!this.connected">
       <span nz-icon nzType="message"></span>
     </button>
     <button nz-button nzType="primary" class="send-button" (click)="hangup()" [nzSize]="'large'" nzShape="round" [disabled]="!connected && !busy">
       <span nz-icon nzType="phone"></span>
     </button>
   </div>
-  
 </div>
-
-
-<nz-drawer [nzClosable]="false" [nzVisible]="visible" nzPlacement="right" (nzOnClose)="close()">
-  <ng-container *nzDrawerContent>
-    <div class="chat" *ngIf="chatToggle">
-      <div class="chat-header">
-        <span>In Chat Messages</span>
-      </div>
-      <div class="messages" #messagesContainer>
-        <div *ngFor="let message of messages" class="message" 
-             [class.message-own]="message.sender === 'You'"
-             [class.message-remote]="message.sender !== 'You'">
-          <div class="message-sender">{{ message.sender }}</div>
-          <div class="message-text">{{ message.text }}</div>
-        </div>
-      </div>
-      <div class="message-input">
-        <input 
-          [(ngModel)]="messageText" 
-          (keyup.enter)="sendMessage()" 
-          placeholder="Type your message here..." 
-          class="message-field"
-        />
-          <button nz-button nzType="primary" class="send-button" (click)="sendMessage()" [nzSize]="'large'" nzShape="circle">
-            <span nz-icon nzType="send"></span>
-          </button>
-      </div>
-    </div>
-  </ng-container>
-</nz-drawer>

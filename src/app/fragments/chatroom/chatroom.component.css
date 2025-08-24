@@ -282,7 +282,7 @@ video {
 
 
 .pc-controls {    
-  flex: 1;
+  flex: 1.5;
   width: 100%;               /* set bar height */
   display: flex;
   flex-direction: row;
@@ -307,10 +307,7 @@ video {
 
 @media (max-width: 600px) {
   .main-ground{
-    display: flex;
     flex: 8;
-    align-items: center;
-    justify-content: center;
 
     .video-container{
       flex-direction: column;
@@ -319,13 +316,12 @@ video {
 
     .video-wrapper{
       width: 100%;
-      aspect-ratio: 4/2;
+      aspect-ratio: 4/1;
     }
   }
 
   .mobile-controls{
     flex: 1.5;
-    align-items: center;
     button{
       padding: 10px;
       height: 50px;
