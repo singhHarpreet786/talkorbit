@@ -288,7 +288,7 @@ video {
   flex-direction: row;
   justify-content: center;       /* horizontal center */
   align-items: center;           /* vertical center */
-  /* padding-bottom: 50px; */
+  padding-bottom: 50px;
   gap: 15px;  
   .send-button{
     font-size: 12px;
@@ -307,7 +307,10 @@ video {
 
 @media (max-width: 600px) {
   .main-ground{
-    flex: 8;
+    display: flex;
+    height: 80%;
+    align-items: center;
+    justify-content: center;
 
     .video-container{
       flex-direction: column;
@@ -316,23 +319,23 @@ video {
 
     .video-wrapper{
       width: 100%;
-      aspect-ratio: 4/1;
+      aspect-ratio: 4/2;
     }
   }
 
   .mobile-controls{
-    flex: 1.5;
+   height: 20%;
+   padding-top: 20px;
+    align-items: start;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
     button{
       padding: 10px;
       height: 50px;
       width: 60px;
     }
-  }
-
-  .mobile-controls{
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+    
   }
 
   .pc-controls{
