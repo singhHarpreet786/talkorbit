@@ -15,10 +15,50 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="chat" *ngIf="chatToggle">
-      <div class="chat-header">
+  <div class="pc-controls">
+    <button nz-button nzType="primary" class="send-button"  (click)="createRoom()"  [nzSize]="'large'" nzShape="round" [disabled]="busy">
+      <span nz-icon nzType="plus"></span>
+      Create Room
+    </button>
+    <button nz-button nzType="primary" class="send-button" (click)="joinRandomRoom()"  [nzSize]="'large'" nzShape="round" [disabled]="busy">
+      <span nz-icon nzType="swap"></span>
+      Join Random
+    </button>
+    <button nz-button nzType="primary" class="send-button" (click)="open()" [nzSize]="'large'" nzShape="round"  [disabled]="!this.connected">
+      <span nz-icon nzType="message"></span>
+      Chat
+    </button>
+    <button nz-button nzType="primary" class="send-button" (click)="hangup()" [nzSize]="'large'" nzShape="round" [disabled]="!connected && !busy">
+      <span nz-icon nzType="phone"></span>
+      Hang Up
+    </button>
+  </div>
+
+  <div class="mobile-controls">
+    <button nz-button nzType="primary" class="send-button"  (click)="createRoom()"  [nzSize]="'large'" nzShape="round" [disabled]="busy">
+      <span nz-icon nzType="plus"></span>
+    </button>
+    <button nz-button nzType="primary" class="send-button" (click)="joinRandomRoom()"  [nzSize]="'large'" nzShape="round" [disabled]="busy">
+      <span nz-icon nzType="swap"></span>
+    </button>
+    <button nz-button nzType="primary" class="send-button" (click)="open()" [nzSize]="'large'" nzShape="round"  [disabled]="!this.connected">
+      <span nz-icon nzType="message"></span>
+    </button>
+    <button nz-button nzType="primary" class="send-button" (click)="hangup()" [nzSize]="'large'" nzShape="round" [disabled]="!connected && !busy">
+      <span nz-icon nzType="phone"></span>
+    </button>
+  </div>
+</div>
+
+
+<nz-drawer [nzClosable]="false" [nzVisible]="visible" nzPlacement="right" (nzOnClose)="close()" [nzWidth]="'400px'">
+  <ng-container *nzDrawerContent>
+    <div class="chat" style="width: 100%;">
+      <div class="chat-header" style="justify-content: space-between;cursor: pointer;">
         <span>In Chat Messages</span>
+          <span nz-icon nzType="close"  (click)="close()"></span>
       </div>
       <div class="messages" #messagesContainer>
         <div *ngFor="let message of messages" class="message" 
@@ -40,39 +80,6 @@
           </button>
       </div>
     </div>
-  </div>
+  </ng-container>
+</nz-drawer>
 
-  <div class="pc-controls">
-    <button nz-button nzType="primary" class="send-button"  (click)="createRoom()"  [nzSize]="'large'" nzShape="round" [disabled]="busy">
-      <span nz-icon nzType="plus"></span>
-      Create Room
-    </button>
-    <button nz-button nzType="primary" class="send-button" (click)="joinRandomRoom()"  [nzSize]="'large'" nzShape="round" [disabled]="busy">
-      <span nz-icon nzType="swap"></span>
-      Join Random
-    </button>
-    <button nz-button nzType="primary" class="send-button" (click)="toogleChat()" [nzSize]="'large'" nzShape="round"  [disabled]="!this.connected">
-      <span nz-icon nzType="message"></span>
-      Chat
-    </button>
-    <button nz-button nzType="primary" class="send-button" (click)="hangup()" [nzSize]="'large'" nzShape="round" [disabled]="!connected && !busy">
-      <span nz-icon nzType="phone"></span>
-      Hang Up
-    </button>
-  </div>
-
-  <div class="mobile-controls">
-    <button nz-button nzType="primary" class="send-button"  (click)="createRoom()"  [nzSize]="'large'" nzShape="round" [disabled]="busy">
-      <span nz-icon nzType="plus"></span>
-    </button>
-    <button nz-button nzType="primary" class="send-button" (click)="joinRandomRoom()"  [nzSize]="'large'" nzShape="round" [disabled]="busy">
-      <span nz-icon nzType="swap"></span>
-    </button>
-    <button nz-button nzType="primary" class="send-button" (click)="toogleChat()" [nzSize]="'large'" nzShape="round"  [disabled]="!this.connected">
-      <span nz-icon nzType="message"></span>
-    </button>
-    <button nz-button nzType="primary" class="send-button" (click)="hangup()" [nzSize]="'large'" nzShape="round" [disabled]="!connected && !busy">
-      <span nz-icon nzType="phone"></span>
-    </button>
-  </div>
-</div>

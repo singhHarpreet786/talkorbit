@@ -11,6 +11,14 @@ export class ChatroomComponent implements OnInit, OnDestroy {
   @ViewChild('localVideo') localVideo!: ElementRef<HTMLVideoElement>;
   @ViewChild('remoteVideo') remoteVideo!: ElementRef<HTMLVideoElement>;
   @ViewChild('messagesContainer') messagesContainer!: ElementRef<HTMLDivElement>;
+  visible = false;
+  open(): void {
+    this.visible = true;
+  }
+
+  close(): void {
+    this.visible = false;
+  }
 
   // Firebase configuration
   private firebaseConfig = {
@@ -29,7 +37,6 @@ export class ChatroomComponent implements OnInit, OnDestroy {
   private localStream: MediaStream | null = null;
   private dataChannel: RTCDataChannel | null = null;
   private unsubscribes: (() => void)[] = [];
-  public chatToggle=false;
 
   connectionStatus = 'Initializing...';
   debugInfo = '';
@@ -439,8 +446,4 @@ export class ChatroomComponent implements OnInit, OnDestroy {
     }
   }
 
-
-  toogleChat(){
-    this.chatToggle = !this.chatToggle;
-  }
 }
