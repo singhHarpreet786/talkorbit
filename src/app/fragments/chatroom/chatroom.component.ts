@@ -1,7 +1,6 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, arrayUnion } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
 
 @Component({
   selector: 'app-chatroom',
@@ -9,372 +8,439 @@ import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot
   styleUrls: ['./chatroom.component.css']
 })
 export class ChatroomComponent implements OnInit, OnDestroy {
-  @ViewChild('localVideo', { static: false }) localVideo!: ElementRef<HTMLVideoElement>;
-  @ViewChild('remoteVideo', { static: false }) remoteVideo!: ElementRef<HTMLVideoElement>;
+  @ViewChild('localVideo') localVideo!: ElementRef<HTMLVideoElement>;
+  @ViewChild('remoteVideo') remoteVideo!: ElementRef<HTMLVideoElement>;
+  @ViewChild('messagesContainer') messagesContainer!: ElementRef<HTMLDivElement>;
 
-  userId: string | null = null;
-  sessionId: string | null = null;
-  db: any = null;
-  loading: boolean = true;
-  queueStatus: 'inQueue' | 'inChat' | null = null;
-  partnerId: string | null = null;
-  chatMessages: any[] = [];
-  messageInput: string = '';
+  // Firebase configuration
+  private firebaseConfig = {
+    apiKey: "AIzaSyBWwNvekEx7Jt5TRWGINkHkdYkcQ7UeT6w",
+    authDomain: "talkorbit-d3c43.firebaseapp.com",
+    projectId: "talkorbit-d3c43",
+    storageBucket: "talkorbit-d3c43.firebasestorage.app",
+    messagingSenderId: "255813108622",
+    appId: "1:255813108622:web:1729cd21efcd5d00c61adf",
+    measurementId: "G-YLC68KRXGS"
+  };
 
-  localStream!: MediaStream;
-  peerConnection!: RTCPeerConnection | null;
+  private app: any;
+  private db: any;
+  private pc: RTCPeerConnection | null = null;
+  private localStream: MediaStream | null = null;
+  private dataChannel: RTCDataChannel | null = null;
+  private unsubscribes: (() => void)[] = [];
+  public chatToggle=false;
 
-  private appId: string = 'AIzaSyBWwNvekEx7Jt5TRWGINkHkdYkcQ7UeT6w';
-  private publicDataPath: string = `/artifacts/${this.appId}/public/data`;
-  private queueCollection: any;
-  private usersCollection: any;
-  private chatsCollection: any;
-  private callsCollection: any;
+  connectionStatus = 'Initializing...';
+  debugInfo = '';
+  busy = false;
+  connected = false;
+  remoteVideoActive = false;
+  roomId: string | null = null;
+  messages: {sender: string, text: string}[] = [];
+  messageText = '';
+  isOfferer = false;
 
-  private userSub: (() => void) | null = null;
-  private queueSub: (() => void) | null = null;
-  private chatSub: (() => void) | null = null;
-  private callSub: (() => void) | null = null;
+  private servers = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' }
+    ]
+  };
 
-  private auth: any;
+  async ngOnInit() {
+    await this.initializeFirebase();
+    await this.initializeMedia();
+  }
 
-  async ngOnInit(): Promise<void> {
+  ngOnDestroy() {
+    this.cleanup();
+  }
+
+  private async initializeFirebase() {
     try {
-      const firebaseConfig = {
-        apiKey: "AIzaSyBWwNvekEx7Jt5TRWGINkHkdYkcQ7UeT6w",
-        authDomain: "talkorbit-d3c43.firebaseapp.com",
-        projectId: "talkorbit-d3c43",
-        storageBucket: "talkorbit-d3c43.firebasestorage.app",
-        messagingSenderId: "255813108622",
-        appId: "1:255813108622:web:1729cd21efcd5d00c61adf",
-        measurementId: "G-YLC68KRXGS"
-      };
-
-      const app = initializeApp(firebaseConfig);
-      this.auth = getAuth(app);
-      this.db = getFirestore(app);
-
-      this.queueCollection = collection(this.db, `${this.publicDataPath}/queue`);
-      this.usersCollection = collection(this.db, `${this.publicDataPath}/users`);
-      this.chatsCollection = collection(this.db, `${this.publicDataPath}/chats`);
-      this.callsCollection = collection(this.db, `${this.publicDataPath}/calls`);
-
-      this.sessionId = crypto.randomUUID();
-
-      onAuthStateChanged(this.auth, async (user) => {
-        if (user) {
-          this.userId = user.uid;
-          await this.setupLocalCamera(); // ✅ Always start camera after login
-          this.setupListeners();
-        } else {
-          const initialAuthToken = null;
-          if (initialAuthToken) {
-            await signInWithCustomToken(this.auth, initialAuthToken);
-          } else {
-            await signInAnonymously(this.auth);
-          }
-        }
-      });
+      this.app = initializeApp(this.firebaseConfig);
+      this.db = getFirestore(this.app);
+      this.connectionStatus = 'Firebase connected';
+      console.log('Firebase initialized successfully');
     } catch (error) {
-      console.error("Initialization failed:", error);
-      this.loading = false;
+      console.error('Firebase initialization failed:', error);
+      this.connectionStatus = 'Firebase connection failed';
     }
   }
 
-  async setupLocalCamera() {
+  private async initializeMedia() {
     try {
-      if (!this.localStream) {
-        this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      this.localStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480 },
+        audio: true   // keep mic so it can be sent to peer
+      });
+  
+      if (this.localVideo) {
+        // Only attach video tracks to your local preview
+        const videoOnlyStream = new MediaStream(this.localStream.getVideoTracks());
+        this.localVideo.nativeElement.srcObject = videoOnlyStream;
+        this.localVideo.nativeElement.muted = true; // extra safety
       }
-
-      if (this.localVideo?.nativeElement) {
-        this.localVideo.nativeElement.srcObject = this.localStream;
-        this.localVideo.nativeElement.muted = true;
-        await this.localVideo.nativeElement.play().catch(err => console.error('Local video play error:', err));
-      }
-    } catch (err) {
-      console.error('Error accessing webcam:', err);
+  
+      this.connectionStatus = 'Ready to connect';
+      console.log('Media initialized successfully');
+    } catch (error) {
+      console.error('Media access failed:', error);
+      this.connectionStatus = 'Camera/microphone access denied';
     }
   }
+  
 
-  setupListeners(): void {
-    if (!this.userId || !this.db || !this.sessionId) {
-      console.error("Missing IDs or Firestore.");
+  async createRoom() {
+    if (!this.localStream || !this.db) {
+      alert('Not ready - check camera and Firebase connection');
       return;
     }
 
-    this.userSub = onSnapshot(doc(this.usersCollection, this.userId), async (docSnap) => {
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        this.queueStatus = userData['queueStatus'];
-        this.partnerId = userData['partnerId'];
+    this.busy = true;
+    this.isOfferer = true;
+    this.connectionStatus = 'Creating room...';
 
-        if (this.partnerId && !this.chatSub) {
-          this.setupChatListener();
-          await this.setupPeerConnection();
-        } else if (!this.partnerId && this.chatSub) {
-          this.chatSub();
-          this.chatSub = null;
-          this.chatMessages = [];
-          this.closePeerConnection();
-        }
-      } else {
-        this.queueStatus = null;
-        this.partnerId = null;
-        this.chatMessages = [];
-        if (this.chatSub) {
-          this.chatSub();
-          this.chatSub = null;
-        }
-        this.closePeerConnection();
-      }
-      this.loading = false;
-    });
+    try {
+      // Create peer connection
+      this.createPeerConnection();
 
-    this.queueSub = onSnapshot(query(this.queueCollection, where("userId", "!=", this.userId)), async (queueSnapshot) => {
-      if (queueSnapshot.empty || this.queueStatus !== 'inQueue') return;
-      const potentialPartnerDocs = queueSnapshot.docs.filter(doc => (doc.data() as any)['userId'] !== this.userId);
-      if (potentialPartnerDocs.length === 0) return;
-
-      const potentialPartnerDoc = potentialPartnerDocs[0];
-      const potentialPartnerId = (potentialPartnerDoc.data() as any)['userId'];
-      const potentialPartnerSessionId = potentialPartnerDoc.id;
-
-      const chatId = [this.userId, potentialPartnerId].sort().join('-');
-      const chatDocRef = doc(this.chatsCollection, chatId);
-
-      await setDoc(doc(this.usersCollection, this.userId!), {
-        partnerId: potentialPartnerId,
-        queueStatus: 'inChat',
-      }, { merge: true });
-
-      await setDoc(doc(this.usersCollection, potentialPartnerId), {
-        partnerId: this.userId,
-        queueStatus: 'inChat',
-      }, { merge: true });
-
-      await setDoc(chatDocRef, {
-        participants: [this.userId, potentialPartnerId],
-        messages: [],
-        createdAt: new Date().toISOString(),
+      // Add local stream
+      this.localStream.getTracks().forEach(track => {
+        this.pc!.addTrack(track, this.localStream!);
       });
 
-      await deleteDoc(doc(this.queueCollection, this.sessionId!));
-      await deleteDoc(doc(this.queueCollection, potentialPartnerSessionId));
+      // Create data channel
+      this.dataChannel = this.pc!.createDataChannel('chat');
+      this.setupDataChannel();
 
+      // Create room document
+      const roomRef = await addDoc(collection(this.db, 'rooms'), {
+        created: new Date().toISOString(),
+        createdBy: 'user1'
+      });
 
-      await this.createOffer();
-    });
-  }
+      this.roomId = roomRef.id;
+      console.log('Room created:', this.roomId);
 
-  setupChatListener(): void {
-    if (!this.userId || !this.partnerId || !this.db) return;
-
-    const chatId = [this.userId, this.partnerId].sort().join('-');
-    const chatDocRef = doc(this.chatsCollection, chatId);
-    this.chatSub = onSnapshot(chatDocRef, (docSnap) => {
-      if (docSnap.exists()) {
-        this.chatMessages = docSnap.data()['messages'];
-      } else {
-        this.partnerId = null;
-        this.queueStatus = null;
-        this.chatMessages = [];
-        this.chatSub = null;
-        this.closePeerConnection();
-      }
-    });
-  }
-
-  async setupPeerConnection() {
-    if (this.peerConnection) {
-      this.closePeerConnection();
-    }
-
-    if (!this.userId || !this.partnerId || !this.db) return;
-  
-    this.peerConnection = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    });
-  
-    console.log('PeerConnection created.');
-
-    this.peerConnection.onconnectionstatechange = () => {
-      console.log("Connection state:", this.peerConnection?.connectionState);
-    };
-
-    this.peerConnection.oniceconnectionstatechange = () => {
-      console.log("ICE state:", this.peerConnection?.iceConnectionState);
-    };
-
-    this.localStream.getTracks().forEach(track => {
-      this.peerConnection!.addTrack(track, this.localStream);
-    });
-
-    this.peerConnection.ontrack = (event) => {
-      if (this.remoteVideo?.nativeElement) {
-        const videoEl = this.remoteVideo.nativeElement;
-        if (videoEl.srcObject !== event.streams[0]) {
-          videoEl.srcObject = event.streams[0];
-          videoEl.muted = false;
-          videoEl.onloadedmetadata = async () => {
-            try {
-              await videoEl.play();
-            } catch (err) {
-              console.error('Remote video play error:', err);
-            }
-          };
-        }
-      }
-    };
-
-    const callId = [this.userId, this.partnerId].sort().join('-');
-    const callDocRef = doc(this.callsCollection, callId);
-
-    this.callSub = onSnapshot(callDocRef, async (docSnap) => {
-      if (!docSnap.exists() || !this.peerConnection) return;
-      const data = docSnap.data() as any;
-
-      if (data.offer && !data.answer && this.peerConnection.signalingState === 'stable') {
-        await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-        await this.createAnswer(callId);
-      } else if (data.answer && this.peerConnection.signalingState !== 'stable') {
-        await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-      }
+      // Create offer
+      const offer = await this.pc!.createOffer({
+        offerToReceiveVideo: true,
+        offerToReceiveAudio: true
+      });
       
+      await this.pc!.setLocalDescription(offer);
+      console.log('Local description set (offer)');
 
-      if (data.candidates) {
-        for (const candidate of data.candidates) {
-          if (candidate.senderId !== this.userId) {
+      // Save offer to Firestore
+      await updateDoc(roomRef, {
+        offer: {
+          type: offer.type,
+          sdp: offer.sdp
+        }
+      });
+
+      this.connectionStatus = 'Waiting for someone to join...';
+      this.debugInfo = `Room ID: ${this.roomId}`;
+
+      // Listen for answer
+      const unsubscribe1 = onSnapshot(doc(this.db, 'rooms', this.roomId), async (snapshot) => {
+        const data = snapshot.data();
+        if (data && data['answer'] && !this.pc?.remoteDescription) {
+          console.log('Answer received');
+          const answer = new RTCSessionDescription(data['answer']);
+          await this.pc!.setRemoteDescription(answer);
+          console.log('Remote description set (answer)');
+        }
+      });
+
+      // Listen for remote ICE candidates
+      const unsubscribe2 = onSnapshot(collection(this.db, 'rooms', this.roomId, 'answerCandidates'), (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+          if (change.type === 'added') {
+            const data = change.doc.data();
+            console.log('Adding remote ICE candidate:', data);
             try {
-              await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-            } catch (err) {
-              console.error('Error adding ICE candidate:', err);
+              await this.pc!.addIceCandidate(new RTCIceCandidate(data));
+            } catch (error) {
+              console.error('Error adding remote candidate:', error);
             }
           }
+        });
+      });
+
+      this.unsubscribes.push(unsubscribe1, unsubscribe2);
+
+    } catch (error) {
+      console.error('Error creating room:', error);
+      this.connectionStatus = 'Failed to create room';
+      this.busy = false;
+    }
+  }
+
+  async joinRandomRoom() {
+    if (!this.localStream || !this.db) {
+      alert('Not ready - check camera and Firebase connection');
+      return;
+    }
+
+    this.busy = true;
+    this.isOfferer = false;
+    this.connectionStatus = 'Looking for room...';
+
+    try {
+      // Get all rooms and filter client-side (simpler than complex Firestore queries)
+      const querySnapshot = await getDocs(collection(this.db, 'rooms'));
+      let roomToJoin = null;
+      let availableRooms = [];
+
+      for (const docSnap of querySnapshot.docs) {
+        const data = docSnap.data();
+        if (data['offer'] && !data['answer']) {
+          availableRooms.push({ id: docSnap.id, data, created: data['created'] });
         }
       }
-    });
 
-    this.peerConnection.onicecandidate = async (event) => {
-      if (event.candidate) {
-        await updateDoc(callDocRef, {
-          candidates: arrayUnion({ ...event.candidate.toJSON(), senderId: this.userId })
+      // Sort by creation time (newest first) and pick the first available
+      if (availableRooms.length > 0) {
+        availableRooms.sort((a, b) => {
+          const timeA = a.created ? new Date(a.created).getTime() : 0;
+          const timeB = b.created ? new Date(b.created).getTime() : 0;
+          return timeB - timeA; // Newest first
         });
+        roomToJoin = availableRooms[0];
       }
+
+      if (!roomToJoin) {
+        this.connectionStatus = 'No available rooms found';
+        this.busy = false;
+        return;
+      }
+
+      console.log('Joining room:', roomToJoin.id);
+      this.roomId = roomToJoin.id;
+
+      // Create peer connection
+      this.createPeerConnection();
+
+      // Add local stream
+      this.localStream.getTracks().forEach(track => {
+        this.pc!.addTrack(track, this.localStream!);
+      });
+
+      // Handle incoming data channel
+      this.pc!.ondatachannel = (event) => {
+        this.dataChannel = event.channel;
+        this.setupDataChannel();
+      };
+
+      // Set remote description (offer)
+      const offer = new RTCSessionDescription(roomToJoin.data['offer']);
+      await this.pc!.setRemoteDescription(offer);
+      console.log('Remote description set (offer)');
+
+      // Create answer
+      const answer = await this.pc!.createAnswer();
+      await this.pc!.setLocalDescription(answer);
+      console.log('Local description set (answer)');
+
+      // Save answer to Firestore
+      await updateDoc(doc(this.db, 'rooms', this.roomId), {
+        answer: {
+          type: answer.type,
+          sdp: answer.sdp
+        },
+        answeredBy: 'user2'
+      });
+
+      this.connectionStatus = 'Connecting...';
+
+      // Listen for remote ICE candidates
+      const unsubscribe = onSnapshot(collection(this.db, 'rooms', this.roomId, 'offerCandidates'), (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+          if (change.type === 'added') {
+            const data = change.doc.data();
+            console.log('Adding remote ICE candidate:', data);
+            try {
+              await this.pc!.addIceCandidate(new RTCIceCandidate(data));
+            } catch (error) {
+              console.error('Error adding remote candidate:', error);
+            }
+          }
+        });
+      });
+
+      this.unsubscribes.push(unsubscribe);
+
+    } catch (error) {
+      console.error('Error joining room:', error);
+      this.connectionStatus = 'Failed to join room';
+      this.busy = false;
+    }
+  }
+
+  private createPeerConnection() {
+    this.pc = new RTCPeerConnection(this.servers);
+    console.log('Peer connection created');
+
+    // Handle remote stream
+    this.pc.ontrack = (event) => {
+      console.log('Remote track received:', event);
+      const remoteStream = event.streams[0];
+      
+      if (this.remoteVideo) {
+        this.remoteVideo.nativeElement.srcObject = remoteStream;
+        this.remoteVideoActive = true;
+        console.log('Remote video set');
+      }
+    };
+
+    // Handle ICE candidates
+    this.pc.onicecandidate = async (event) => {
+      if (event.candidate && this.roomId) {
+        const candidateData = event.candidate.toJSON();
+        const collectionName = this.isOfferer ? 'offerCandidates' : 'answerCandidates';
+        
+        console.log('Adding local ICE candidate to', collectionName);
+        try {
+          await addDoc(collection(this.db, 'rooms', this.roomId, collectionName), candidateData);
+        } catch (error) {
+          console.error('Error adding ICE candidate:', error);
+        }
+      }
+    };
+
+    // Handle connection state changes
+    this.pc.onconnectionstatechange = () => {
+      const state = this.pc?.connectionState;
+      console.log('Connection state:', state);
+      
+      switch (state) {
+        case 'connected':
+          this.connectionStatus = 'Connected!';
+          this.connected = true;
+          this.busy = false;
+          break;
+        case 'disconnected':
+          this.connectionStatus = 'Disconnected';
+          this.connected = false;
+          break;
+        case 'failed':
+          this.connectionStatus = 'Connection failed';
+          this.connected = false;
+          this.busy = false;
+          break;
+        case 'connecting':
+          this.connectionStatus = 'Connecting...';
+          break;
+      }
+    };
+
+    // Handle ICE connection state
+    this.pc.oniceconnectionstatechange = () => {
+      console.log('ICE connection state:', this.pc?.iceConnectionState);
     };
   }
 
-  async createOffer() {
-    if (!this.peerConnection || this.peerConnection.signalingState === 'closed') {
-      await this.setupPeerConnection();
-    }
-    if (!this.peerConnection) return;
+  private setupDataChannel() {
+    if (!this.dataChannel) return;
 
-    await new Promise(res => setTimeout(res, 300));
+    this.dataChannel.onopen = () => {
+      console.log('Data channel opened');
+    };
 
-    const offer = await this.peerConnection.createOffer();
-    await this.peerConnection.setLocalDescription(offer);
-
-    const callId = [this.userId, this.partnerId].sort().join('-');
-    const callDocRef = doc(this.callsCollection, callId);
-
-    await setDoc(callDocRef, {
-      offer: { type: offer.type, sdp: offer.sdp },
-      candidates: [],
-    });
-  }
-
-  async createAnswer(callId: string) {
-    if (!this.peerConnection || this.peerConnection.signalingState === 'closed') {
-      await this.setupPeerConnection();
-    }
-    if (!this.peerConnection) return;
-
-    const answer = await this.peerConnection.createAnswer();
-    await this.peerConnection.setLocalDescription(answer);
-
-    const callDocRef = doc(this.callsCollection, callId);
-    await updateDoc(callDocRef, {
-      answer: { type: answer.type, sdp: answer.sdp },
-    });
-  }
-
-  closePeerConnection() {
-    if (this.peerConnection) {
+    this.dataChannel.onmessage = (event) => {
       try {
-        this.peerConnection.ontrack = null;
-        this.peerConnection.onicecandidate = null;
-        this.peerConnection.close();
-      } catch (err) {
-        console.error('Error closing peer connection:', err);
+        const message = JSON.parse(event.data);
+        this.messages.push({
+          sender: 'Remote',
+          text: message.text
+        });
+        this.scrollToBottom();
+      } catch (error) {
+        console.error('Error parsing message:', error);
       }
-      this.peerConnection = null;
+    };
+
+    this.dataChannel.onerror = (error) => {
+      console.error('Data channel error:', error);
+    };
+  }
+
+  sendMessage() {
+    if (!this.messageText.trim() || !this.dataChannel || this.dataChannel.readyState !== 'open') {
+      return;
     }
-    if (this.callSub) {
-      this.callSub();
-      this.callSub = null;
+
+    const message = {
+      sender: 'You',
+      text: this.messageText.trim()
+    };
+
+    this.messages.push(message);
+    
+    try {
+      this.dataChannel.send(JSON.stringify({ text: message.text }));
+    } catch (error) {
+      console.error('Error sending message:', error);
     }
-    // ❌ Don't stop camera tracks so it stays on
+
+    this.messageText = '';
+    this.scrollToBottom();
   }
 
-  ngOnDestroy(): void {
-    if (this.userSub) this.userSub();
-    if (this.queueSub) this.queueSub();
-    if (this.chatSub) this.chatSub();
-    if (this.callSub) this.callSub();
-    this.closePeerConnection();
+  private scrollToBottom() {
+    setTimeout(() => {
+      if (this.messagesContainer) {
+        const element = this.messagesContainer.nativeElement;
+        element.scrollTop = element.scrollHeight;
+      }
+    }, 100);
   }
 
-  async handleJoinQueue(): Promise<void> {
-    if (!this.db || !this.userId || !this.sessionId) return;
-    this.loading = true;
-    await setDoc(doc(this.usersCollection, this.userId), {
-      userId: this.userId,
-      queueStatus: 'inQueue',
-      partnerId: null
-    }, { merge: true });
-    await setDoc(doc(this.queueCollection, this.sessionId), {
-      userId: this.userId,
-      joinedAt: new Date().toISOString(),
-    });
-    this.loading = false;
+  hangup() {
+    this.cleanup();
+    this.connectionStatus = 'Disconnected';
+    this.busy = false;
+    this.connected = false;
+    this.remoteVideoActive = false;
+    this.messages = [];
+    this.roomId = null;
+    this.debugInfo = '';
   }
 
-  async handleLeaveChat(): Promise<void> {
-    if (!this.db || !this.userId || !this.partnerId) return;
+  private cleanup() {
+    // Unsubscribe from all Firestore listeners
+    this.unsubscribes.forEach(unsubscribe => unsubscribe());
+    this.unsubscribes = [];
 
-    const chatId = [this.userId, this.partnerId].sort().join('-');
-    const chatDocRef = doc(this.chatsCollection, chatId);
-    const partnerId = this.partnerId;
+    // Close peer connection
+    if (this.pc) {
+      this.pc.close();
+      this.pc = null;
+    }
 
-    await updateDoc(doc(this.usersCollection, this.userId), {
-      partnerId: null,
-      queueStatus: null,
-    });
+    // Close data channel
+    if (this.dataChannel) {
+      this.dataChannel.close();
+      this.dataChannel = null;
+    }
 
-    await updateDoc(doc(this.usersCollection, partnerId), {
-      partnerId: null,
-      queueStatus: null,
-    });
+    // Clear remote video
+    if (this.remoteVideo) {
+      this.remoteVideo.nativeElement.srcObject = null;
+    }
 
-    await deleteDoc(chatDocRef);
-    this.closePeerConnection();
+    // Clean up Firestore room
+    if (this.roomId && this.db) {
+      deleteDoc(doc(this.db, 'rooms', this.roomId)).catch(console.error);
+    }
   }
 
-  async handleSendMessage(e: Event): Promise<void> {
-    e.preventDefault();
-    if (!this.db || !this.userId || !this.partnerId || !this.messageInput.trim()) return;
 
-    const chatId = [this.userId, this.partnerId].sort().join('-');
-    const chatDocRef = doc(this.chatsCollection, chatId);
-
-    const newMessages = [...this.chatMessages, {
-      senderId: this.userId,
-      text: this.messageInput,
-      timestamp: new Date().toISOString(),
-    }];
-
-    await updateDoc(chatDocRef, { messages: newMessages });
-    this.messageInput = '';
+  toogleChat(){
+    this.chatToggle = !this.chatToggle;
   }
 }

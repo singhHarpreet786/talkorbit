@@ -21,7 +21,7 @@ const routes: Routes = [
     children:[
       {
         path:'chatroom',
-        component:TestComponent
+        component:ChatroomComponent
       },
       {
         path:'landing',
