@@ -53,7 +53,7 @@
 </div>
 
 
-<nz-drawer [nzClosable]="false" [nzVisible]="visible" nzPlacement="right" (nzOnClose)="close()" [nzWidth]="'400px'">
+<nz-drawer [nzClosable]="false" [nzVisible]="visible" nzPlacement="right" (nzOnClose)="close()" [nzWidth]="'100vw'">
   <ng-container *nzDrawerContent>
     <div class="chat" style="width: 100%;">
       <div class="chat-header" style="justify-content: space-between;cursor: pointer;">
@@ -61,10 +61,10 @@
           <span nz-icon nzType="close"  (click)="close()"></span>
       </div>
       <div class="messages" #messagesContainer>
-        <div *ngFor="let message of messages" class="message" 
+        <div *ngFor="let message of messages;let i = index" class="message" 
              [class.message-own]="message.sender === 'You'"
              [class.message-remote]="message.sender !== 'You'">
-          <div class="message-sender">{{ message.sender }}</div>
+          <div class="message-sender" *ngIf="i === 0 || messages[i - 1].sender !== message.sender">{{ message.sender }}</div>
           <div class="message-text">{{ message.text }}</div>
         </div>
       </div>
